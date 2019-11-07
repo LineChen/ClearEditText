@@ -1,0 +1,2 @@
+include ':app', ':clear_edtitext'
+rootProject.name='ClearEditText'
