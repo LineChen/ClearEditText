@@ -25,7 +25,7 @@ public class ClearEditText extends AppCompatEditText {
     private int mHeight;
     private boolean showClose;
     private boolean enableClose;
-    private float padding;
+    private float iconPadding;
     private float mClearIconDrawWidth;
     private float mClearIconDrawHeight;
     private RectF mDestRect;
@@ -57,7 +57,7 @@ public class ClearEditText extends AppCompatEditText {
                 clearIcon = a.getResourceId(R.styleable.ClearEditText_clear_edit_icon, 0);
                 mClearIconDrawWidth = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_width, 0f);
                 mClearIconDrawHeight = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_height, 0f);
-                padding = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_padding, 0f);
+                iconPadding = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_padding, 0f);
                 enableClose = a.getBoolean(R.styleable.ClearEditText_clear_edit_enable, true);
             } finally {
                 a.recycle();
@@ -113,10 +113,10 @@ public class ClearEditText extends AppCompatEditText {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (enableClose && event.getActionMasked() == MotionEvent.ACTION_UP) {
-            if (showClose && event.getX() > (getWidth() - getHeight() + padding)
-                    && event.getX() < (getWidth() - padding)
-                    && event.getY() > padding
-                    && event.getY() < (getHeight() - padding)) {
+            if (showClose && event.getX() > (getWidth() - getHeight() + iconPadding)
+                    && event.getX() < (getWidth() - iconPadding)
+                    && event.getY() > iconPadding
+                    && event.getY() < (getHeight() - iconPadding)) {
                 setText("");
             }
         }
@@ -128,7 +128,7 @@ public class ClearEditText extends AppCompatEditText {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (enableClose && showClose) {
-            mDestRect.set(mWidth - mClearIconDrawWidth - padding, (mHeight - mClearIconDrawHeight) / 2, mWidth - padding, (mHeight - mClearIconDrawHeight) / 2 + mClearIconDrawHeight);
+            mDestRect.set(mWidth - mClearIconDrawWidth - iconPadding, (mHeight - mClearIconDrawHeight) / 2, mWidth - iconPadding, (mHeight - mClearIconDrawHeight) / 2 + mClearIconDrawHeight);
             canvas.drawBitmap(mClearBitmap, null, mDestRect, null);
         }
     }
@@ -161,5 +161,29 @@ public class ClearEditText extends AppCompatEditText {
         mWidth = w;
         mHeight = h;
         deal();
+    }
+
+    public boolean isShowClose() {
+        return showClose;
+    }
+
+    public void setShowClose(boolean showClose) {
+        this.showClose = showClose;
+    }
+
+    public boolean isEnableClose() {
+        return enableClose;
+    }
+
+    public void setEnableClose(boolean enableClose) {
+        this.enableClose = enableClose;
+    }
+
+    public float getIconPadding() {
+        return iconPadding;
+    }
+
+    public void setIconPadding(float iconPadding) {
+        this.iconPadding = iconPadding;
     }
 }
