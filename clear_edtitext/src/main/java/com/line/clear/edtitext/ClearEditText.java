@@ -112,13 +112,9 @@ public class ClearEditText extends AppCompatEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (enableClose && event.getActionMasked() == MotionEvent.ACTION_UP) {
-            if (showClose && event.getX() > (getWidth() - getHeight() + iconPadding)
-                    && event.getX() < (getWidth() - iconPadding)
-                    && event.getY() > iconPadding
-                    && event.getY() < (getHeight() - iconPadding)) {
-                setText("");
-            }
+        if (event.getActionMasked() == MotionEvent.ACTION_UP &&
+                enableClose && mDestRect.contains(event.getX(), event.getY())) {
+            setText("");
         }
         return super.onTouchEvent(event);
     }
