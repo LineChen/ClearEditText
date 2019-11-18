@@ -165,6 +165,7 @@ public class ClearEditText extends AppCompatEditText {
 
     public void setShowClose(boolean showClose) {
         this.showClose = showClose;
+        invalidate();
     }
 
     public boolean isEnableClose() {
@@ -173,6 +174,7 @@ public class ClearEditText extends AppCompatEditText {
 
     public void setEnableClose(boolean enableClose) {
         this.enableClose = enableClose;
+        invalidate();
     }
 
     public float getIconPadding() {
@@ -181,5 +183,6 @@ public class ClearEditText extends AppCompatEditText {
 
     public void setIconPadding(float iconPadding) {
         this.iconPadding = iconPadding;
+        invalidate();
     }
 }
