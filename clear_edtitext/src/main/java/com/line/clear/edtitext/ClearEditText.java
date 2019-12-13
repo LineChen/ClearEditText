@@ -2,10 +2,7 @@ package com.line.clear.edtitext;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -14,25 +11,18 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 /**
- * Created by chenliu on 2019-11-05.
+ * Created by chenliu on 2019-12-13.
  */
 public class ClearEditText extends AppCompatEditText {
 
-    private Bitmap mClearBitmap;
-    private int mWidth;
-    private int mHeight;
-    private boolean showClose;
-    private boolean enableClose;
-    private float iconPadding;
-    private float mClearIconDrawWidth;
-    private float mClearIconDrawHeight;
-    private RectF mDestRect;
-
     private View.OnFocusChangeListener innerFocusChangeListener;
     private View.OnFocusChangeListener outerFocusChangeListener;
-
+    private boolean enableClose;
+    private Drawable clearIconDrawable;
 
     public ClearEditText(Context context) {
         super(context);
@@ -55,20 +45,19 @@ public class ClearEditText extends AppCompatEditText {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.ClearEditText);
             try {
                 clearIcon = a.getResourceId(R.styleable.ClearEditText_clear_edit_icon, 0);
-                mClearIconDrawWidth = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_width, 0f);
-                mClearIconDrawHeight = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_height, 0f);
-                iconPadding = a.getDimension(R.styleable.ClearEditText_clear_edit_icon_padding, 0f);
                 enableClose = a.getBoolean(R.styleable.ClearEditText_clear_edit_enable, true);
             } finally {
                 a.recycle();
             }
         }
-        mDestRect = new RectF();
-        BitmapFactory.Options bfoOptions = new BitmapFactory.Options();
-        bfoOptions.inScaled = false;
         if (clearIcon != 0) {
-            mClearBitmap = BitmapFactory.decodeResource(getResources(), clearIcon, bfoOptions);
+            final Drawable drawable = ContextCompat.getDrawable(getContext(), clearIcon);
+            final Drawable wrappedDrawable = DrawableCompat.wrap(drawable); //Wrap the drawable so that it can be tinted pre Lollipop
+            DrawableCompat.setTint(wrappedDrawable, getCurrentHintTextColor());
+            clearIconDrawable = wrappedDrawable;
+            clearIconDrawable.setBounds(0, 0, clearIconDrawable.getIntrinsicWidth(), clearIconDrawable.getIntrinsicHeight());
         }
+        setClearIconVisible(false);
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -82,8 +71,7 @@ public class ClearEditText extends AppCompatEditText {
 
             @Override
             public void afterTextChanged(Editable s) {
-                showClose = !TextUtils.isEmpty(s);
-                invalidate();
+                setClearIconVisible(enableClose && !TextUtils.isEmpty(s));
             }
         });
 
@@ -91,14 +79,25 @@ public class ClearEditText extends AppCompatEditText {
         innerFocusChangeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                showClose = hasFocus && !TextUtils.isEmpty(getText());
-                invalidate();
+                setClearIconVisible(enableClose && hasFocus && !TextUtils.isEmpty(getText()));
                 if (outerFocusChangeListener != null) {
                     outerFocusChangeListener.onFocusChange(v, hasFocus);
                 }
             }
         };
         super.setOnFocusChangeListener(innerFocusChangeListener);
+    }
+
+    private void setClearIconVisible(final boolean visible) {
+        if (clearIconDrawable != null) {
+            clearIconDrawable.setVisible(visible, false);
+            final Drawable[] compoundDrawables = getCompoundDrawables();
+            setCompoundDrawables(
+                    compoundDrawables[0],
+                    compoundDrawables[1],
+                    visible ? clearIconDrawable : null,
+                    compoundDrawables[3]);
+        }
     }
 
     @Override
@@ -112,77 +111,15 @@ public class ClearEditText extends AppCompatEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_UP &&
-                enableClose && mDestRect.contains(event.getX(), event.getY())) {
-            setText("");
+        final int x = (int) event.getX();
+        if (enableClose && clearIconDrawable.isVisible() && x > getWidth() - getPaddingRight() - clearIconDrawable.getIntrinsicWidth()) {
+            if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+                setError(null);
+                setText("");
+            }
+            return true;
         }
         return super.onTouchEvent(event);
     }
 
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (enableClose && showClose) {
-            mDestRect.set(mWidth - mClearIconDrawWidth - iconPadding, (mHeight - mClearIconDrawHeight) / 2, mWidth - iconPadding, (mHeight - mClearIconDrawHeight) / 2 + mClearIconDrawHeight);
-            canvas.drawBitmap(mClearBitmap, null, mDestRect, null);
-        }
-    }
-
-    private boolean hasScale;
-
-    private void deal() {
-        if (!hasScale) {
-            int width = mClearBitmap.getWidth();
-            int height = mClearBitmap.getHeight();
-            // 设置想要的大小
-            if (mClearIconDrawWidth == 0 || mClearIconDrawHeight == 0) {
-                mClearIconDrawWidth = width;
-                mClearIconDrawHeight = height;
-            } else {
-                if (mClearIconDrawWidth > mHeight) {
-                    mClearIconDrawWidth = mHeight;
-                }
-                if (mClearIconDrawHeight > mHeight) {
-                    mClearIconDrawHeight = mHeight;
-                }
-            }
-            hasScale = true;
-        }
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mWidth = w;
-        mHeight = h;
-        deal();
-    }
-
-    public boolean isShowClose() {
-        return showClose;
-    }
-
-    public void setShowClose(boolean showClose) {
-        this.showClose = showClose;
-        invalidate();
-    }
-
-    public boolean isEnableClose() {
-        return enableClose;
-    }
-
-    public void setEnableClose(boolean enableClose) {
-        this.enableClose = enableClose;
-        invalidate();
-    }
-
-    public float getIconPadding() {
-        return iconPadding;
-    }
-
-    public void setIconPadding(float iconPadding) {
-        this.iconPadding = iconPadding;
-        invalidate();
-    }
 }

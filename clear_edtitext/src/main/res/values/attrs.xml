@@ -3,9 +3,6 @@
     <declare-styleable name="ClearEditText">
         <attr name="clear_edit_enable" format="boolean" />
         <attr name="clear_edit_icon" format="reference" />
-        <attr name="clear_edit_icon_width" format="dimension" />
-        <attr name="clear_edit_icon_height" format="dimension" />
-        <attr name="clear_edit_icon_padding" format="dimension" />
     </declare-styleable>
 
 </resources>
