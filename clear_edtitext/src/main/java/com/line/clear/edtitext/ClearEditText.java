@@ -112,7 +112,7 @@ public class ClearEditText extends AppCompatEditText {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         final int x = (int) event.getX();
-        if (enableClose && clearIconDrawable.isVisible() && x > getWidth() - getPaddingRight() - clearIconDrawable.getIntrinsicWidth()) {
+        if (enableClose && clearIconDrawable != null && clearIconDrawable.isVisible() && x > getWidth() - getPaddingRight() - clearIconDrawable.getIntrinsicWidth()) {
             if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                 setError(null);
                 setText("");
